@@ -1,0 +1,33 @@
+{
+  "name": "max-vpn-bot",
+  "version": "0.2.2",
+  "description": "Automated VPN subscription sales via MAX Messenger with 3X-UI integration",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f vpnbot",
+    "db:backup": "docker exec vpnbot-postgres pg_dump -U vpn_user vpnbot > backup_$(date +%Y%m%d_%H%M%S).sql",
+    "db:restore": "docker exec -i vpnbot-postgres psql -U vpn_user vpnbot < "
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": ["vpn", "bot", "max", "telegram", "3x-ui", "vless"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@maxhub/max-bot-api": "^0.2.2",
+    "pg": "^8.11.3",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "pino": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9"
+  }
+}

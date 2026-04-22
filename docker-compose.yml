@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: vpnbot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vpnbot}
+      POSTGRES_USER: ${DB_USER:-vpn_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vpnbot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vpn_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # VPN Bot Application
+  vpnbot:
+    build: .
+    container_name: vpnbot-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BOT_ADMINS=${BOT_ADMINS}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-vpnbot}
+      - DB_USER=${DB_USER:-vpn_user}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - XUI_URL=${XUI_URL}
+      - XUI_USERNAME=${XUI_USERNAME}
+      - XUI_PASSWORD=${XUI_PASSWORD}
+      - XUI_INBOUND_ID=${XUI_INBOUND_ID}
+      - MAX_API_URL=${MAX_API_URL}
+      - MAX_API_TOKEN=${MAX_API_TOKEN}
+      - AI_PROVIDER=${AI_PROVIDER}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_MODEL=${AI_MODEL}
+      - AI_PROMPT=${AI_PROMPT}
+      - SUPPORT_CHAT_ID=${SUPPORT_CHAT_ID}
+      - FOUNDER_MAX_USER_ID=${FOUNDER_MAX_USER_ID}
+    volumes:
+      - ./videos:/app/videos:ro
+    networks:
+      - vpnbot-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  vpnbot-network:
+    driver: bridge
