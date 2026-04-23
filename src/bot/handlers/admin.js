@@ -149,27 +149,35 @@ async function adminHandler(bot) {
 
       // Проверяем реферала и выдаём купон
       const referral = await ReferralModel.getReferrer(user.id);
-      if (referral && !referral.reward_issued) {
-        const validUntil = new Date();
-        validUntil.setFullYear(validUntil.getFullYear() + 1);
+      if (referral) {
+        // Проверяем есть ли уже купон для этого реферала (чтобы не выдавать дважды)
+        const existingCoupons = await CouponModel.getUserCoupons(referral.referrer_id);
+        const hasReferralCoupon = existingCoupons.some(c => c.code.startsWith('SALE-'));
+        
+        if (!hasReferralCoupon) {
+          const validUntil = new Date();
+          validUntil.setFullYear(validUntil.getFullYear() + 1);
 
-        await CouponModel.create(
-          referral.referrer_id,
-          config.referralDiscount,
-          validUntil
-        );
-
-        await ReferralModel.markRewardIssued(referral.id);
-
-        // Уведомляем реферера
-        try {
-          await bot.api.sendMessageToUser(referral.max_user_id,
-            `🎉 Ваш реферал оплатил подписку!\n\n` +
-            `Вам начислен купон на скидку ${config.referralDiscount}%\n` +
-            `Купон будет доступен в личном кабинете.`
+          await CouponModel.create(
+            referral.referrer_id,
+            config.referralDiscount,
+            validUntil
           );
-        } catch (error) {
-          console.error('Failed to notify referrer:', error);
+
+          console.log('[Admin] Referral coupon created for user:', referral.referrer_id);
+
+          // Уведомляем реферера
+          try {
+            await bot.api.sendMessageToUser(referral.max_user_id,
+              `🎉 Ваш реферал оплатил подписку!\n\n` +
+              `Вам начислен купон на скидку ${config.referralDiscount}%\n` +
+              `Купон будет доступен в личном кабинете.`
+            );
+          } catch (error) {
+            console.error('Failed to notify referrer:', error);
+          }
+        } else {
+          console.log('[Admin] Referral already has coupon, skipping');
         }
       }
 
