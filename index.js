@@ -122,8 +122,10 @@ async function main() {
   
   // Обработка ошибок сети
   process.on('uncaughtException', (error) => {
+    // Сетевые ошибки - не критичны, бот продолжит работу
     if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || 
-        (error.cause && error.cause.code === 'ECONNRESET')) {
+        error.code === 'UND_ERR_SOCKET' ||
+        (error.cause && (error.cause.code === 'ECONNRESET' || error.cause.code === 'UND_ERR_SOCKET'))) {
       console.error('[Network] Connection error:', error.message);
       console.error('[Network] Bot will continue, MAX API will reconnect automatically');
       // Не выходим, бот продолжит работу
@@ -134,9 +136,11 @@ async function main() {
   });
   
   process.on('unhandledRejection', (reason, promise) => {
-    if (reason && reason.code === 'ECONNRESET') {
-      console.error('[Network] Unhandled rejection - connection reset');
-      console.error('[Network] Bot will continue');
+    // Сетевые ошибки - не критичны
+    if (reason && (reason.code === 'ECONNRESET' || reason.code === 'UND_ERR_SOCKET' ||
+        (reason.cause && (reason.cause.code === 'ECONNRESET' || reason.cause.code === 'UND_ERR_SOCKET')))) {
+      console.error('[Network] Unhandled rejection - connection error:', reason.message);
+      console.error('[Network] Bot will continue, polling will reconnect');
     } else {
       console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
     }
