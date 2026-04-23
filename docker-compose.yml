@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -33,25 +31,19 @@ services:
         condition: service_healthy
     environment:
       - NODE_ENV=production
-      - BOT_TOKEN=${BOT_TOKEN}
+      - MAX_BOT_TOKEN=${MAX_BOT_TOKEN}
+      - MAX_BOT_USERNAME=${MAX_BOT_USERNAME}
       - BOT_ADMINS=${BOT_ADMINS}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=${DB_NAME:-vpnbot}
       - DB_USER=${DB_USER:-vpn_user}
       - DB_PASSWORD=${DB_PASSWORD}
-      - XUI_URL=${XUI_URL}
-      - XUI_USERNAME=${XUI_USERNAME}
-      - XUI_PASSWORD=${XUI_PASSWORD}
-      - XUI_INBOUND_ID=${XUI_INBOUND_ID}
-      - MAX_API_URL=${MAX_API_URL}
-      - MAX_API_TOKEN=${MAX_API_TOKEN}
-      - AI_PROVIDER=${AI_PROVIDER}
-      - AI_API_KEY=${AI_API_KEY}
-      - AI_MODEL=${AI_MODEL}
-      - AI_PROMPT=${AI_PROMPT}
-      - SUPPORT_CHAT_ID=${SUPPORT_CHAT_ID}
-      - FOUNDER_MAX_USER_ID=${FOUNDER_MAX_USER_ID}
+      - XUI_SERVERS_JSON=${XUI_SERVERS_JSON}
+      - SBER_PHONE=${SBER_PHONE}
+      - SBER_RECIPIENT_NAME=${SBER_RECIPIENT_NAME}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     volumes:
       - ./videos:/app/videos:ro
     networks:
