@@ -28,7 +28,7 @@ async function adminHandler(bot) {
       }
 
       // Обновляем статус платежа
-      await PaymentModel.updateStatus(paymentId, 'approved', payment.user_id);
+      await PaymentModel.updateStatus(paymentId, 'approved');
 
       // Активируем подписку
       const user = await UserModel.findById(payment.user_id);
@@ -301,18 +301,13 @@ async function adminHandler(bot) {
       }
 
       // Обновляем статус
-      await PaymentModel.updateStatus(paymentId, 'rejected', payment.user_id);
-
-      // Если был купон, возвращаем его
-      if (payment.discount_percent > 0) {
-        // TODO: Возврат купона (нужно хранить связь купона с платежом)
-      }
+      await PaymentModel.updateStatus(paymentId, 'rejected');
 
       // Уведомляем пользователя
       const user = await UserModel.findById(payment.user_id);
       await bot.api.sendMessageToUser(user.max_user_id,
         `❌ Ваша оплата #${paymentId} отклонена.\n\n` +
-        `Сумма: ${payment.final_price}₽\n\n` +
+        `Сумма: ${payment.amount}₽\n\n` +
         `Пожалуйста, проверьте чек и попробуйте снова.`
       );
 

@@ -112,6 +112,8 @@ async function showPaymentInfo(ctx, user, tariff, discountPercent, couponCode = 
   }
 
   message += `📱 Ссылка для оплаты:\n${sberLink}\n\n`;
+  message += `Или перевод по номеру ${config.sber.phone}\n`;
+  message += `На имя: ${config.sber.recipientName}\n\n`;
   message += `После оплаты отправьте .pdf файл или скриншот чека в этот чат.`;
 
   // Сохраняем состояние ожидания чека

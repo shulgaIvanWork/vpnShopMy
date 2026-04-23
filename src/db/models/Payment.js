@@ -34,10 +34,10 @@ class PaymentModel {
   static async updateStatus(paymentId, status, adminId = null) {
     const result = await pool.query(
       `UPDATE payments 
-       SET status = $1, admin_id = $2, processed_at = NOW()
-       WHERE id = $3 
+       SET status = $1, updated_at = NOW()
+       WHERE id = $2 
        RETURNING *`,
-      [status, adminId, paymentId]
+      [status, paymentId]
     );
     return result.rows[0];
   }

@@ -39,7 +39,7 @@ class CouponModel {
   static async useCoupon(code) {
     const result = await pool.query(
       `UPDATE coupons 
-       SET used = TRUE, used_at = NOW()
+       SET used = TRUE
        WHERE code = $1 
        RETURNING *`,
       [code]

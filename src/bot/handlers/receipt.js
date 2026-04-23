@@ -124,7 +124,7 @@ async function receiptHandler(bot) {
       // Уведомляем пользователя
       await ctx.reply(
         `✅ Чек получен!\n\n` +
-        `Ваш платёж #${payment.id} на сумму ${payment.final_price}₽ ожидает подтверждения.\n\n` +
+        `Ваш платёж #${payment.id} на сумму ${payment.amount}₽ ожидает подтверждения.\n\n` +
         `Администратор проверит оплату в ближайшее время. Вы получите уведомление.`
       );
 
@@ -132,9 +132,8 @@ async function receiptHandler(bot) {
       const InlineKeyboards = require('../keyboards/inline');
       const adminMessage = `💰 Новый платёж #${payment.id}\n\n` +
         `👤 Пользователь: ${user.username || user.max_user_id}\n` +
-        `💵 Сумма: ${payment.final_price}₽\n` +
+        `💵 Сумма: ${payment.amount}₽\n` +
         `📅 Тариф: ${payment.tariff_days} дней\n` +
-        (payment.discount_percent > 0 ? `🎟️ Скидка: ${payment.discount_percent}%\n` : '') +
         `\nЧек прикреплен ниже:\n`;
 
       // Получаем вложение из оригинального сообщения
