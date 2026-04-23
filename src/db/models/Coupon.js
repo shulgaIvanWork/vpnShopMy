@@ -30,7 +30,7 @@ class CouponModel {
   static async isValid(code) {
     const coupon = await this.findByCode(code);
     if (!coupon) return false;
-    if (coupon.is_used) return false;
+    if (coupon.used) return false;
     if (new Date(coupon.valid_until) < new Date()) return false;
     return true;
   }
@@ -39,7 +39,7 @@ class CouponModel {
   static async useCoupon(code) {
     const result = await pool.query(
       `UPDATE coupons 
-       SET is_used = TRUE, used_at = NOW()
+       SET used = TRUE, used_at = NOW()
        WHERE code = $1 
        RETURNING *`,
       [code]
@@ -51,7 +51,7 @@ class CouponModel {
   static async getUserCoupons(userId) {
     const result = await pool.query(
       `SELECT * FROM coupons 
-       WHERE user_id = $1 AND is_used = FALSE AND valid_until > NOW()
+       WHERE user_id = $1 AND used = FALSE AND valid_until > NOW()
        ORDER BY valid_until ASC`,
       [userId]
     );
