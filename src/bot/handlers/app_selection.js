@@ -29,12 +29,22 @@ async function appSelectionHandler(bot) {
       const serverUrl = new URL(serverObj.url);
       const serverHost = serverUrl.hostname;
       const serverPort = 443;
+      const isHttps = serverUrl.protocol === 'https:';
+      const subdomain = serverObj.subdomain;
       
       // Получаем имя подключения
       const connectionName = serverObj.name || 'MAX_VPN';
-      const vpnLink = `vless://${userData.uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+      
+      // Для HTTPS серверов добавляем TLS параметры безопасности
+      let vpnLink;
+      if (isHttps && subdomain) {
+        vpnLink = `vless://${userData.uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${subdomain}#${connectionName}-user_${user.id}`;
+      } else {
+        vpnLink = `vless://${userData.uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+      }
       
       console.log(`[App Selection] Generated VPN link for user ${user.id}, app: ${app}`);
+      console.log(`[App Selection] Server type:`, isHttps ? 'HTTPS (TLS)' : 'HTTP (no TLS)');
       
       // Отправляем VPN ключ в отдельном сообщении для удобства копирования
       await ctx.reply(`${vpnLink}`);
