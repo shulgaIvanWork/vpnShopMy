@@ -22,15 +22,16 @@ async function dashboardHandler(bot) {
       }
 
       // Получаем трафик
-      let trafficText = '📊 Трафик: загружается...';
-      if (user.uuid) {
+      let trafficText = '📊 Трафик: нет данных';
+      if (user.uuid && user.connection_name) {
         try {
-          const traffic = await XuiService.getClientTraffic(`user_${user.id}`);
+          const traffic = await XuiService.getClientTraffic(user.connection_name);
           if (traffic) {
             const totalGB = (traffic.total / (1024 * 1024 * 1024)).toFixed(2);
-            trafficText = `📊 Трафик: ${totalGB} ГБ`;
+            trafficText = `📊 Трафик: ${totalGB} ГБ (${traffic.server})`;
           }
         } catch (error) {
+          console.error('[Dashboard] Traffic error:', error.message);
           trafficText = '📊 Трафик: недоступно';
         }
       }
@@ -70,9 +71,9 @@ async function dashboardHandler(bot) {
           format: 'markdown',
           attachments: [
             Keyboard.inlineKeyboard([
-              [Keyboard.button.callback('V2Ray (Windows/Mac)', 'app_select_v2ray')],
-              [Keyboard.button.callback('oneXray (Mac/iOS)', 'app_select_onexray')],
-              [Keyboard.button.callback('Hiddify (Android/iOS)', 'app_select_hiddify')],
+              [Keyboard.button.callback('V2Ray', 'app_select_v2ray')],
+              [Keyboard.button.callback('oneXray', 'app_select_onexray')],
+              [Keyboard.button.callback('Hiddify', 'app_select_hiddify')],
               [Keyboard.button.callback('« Назад', 'menu_dashboard')],
             ])
           ]

@@ -234,9 +234,9 @@ async function adminHandler(bot) {
           {
             attachments: [
               Keyboard.inlineKeyboard([
-                [Keyboard.button.callback('v2ray (Windows/Mac)', 'app_select_v2ray')],
-                [Keyboard.button.callback('oneXray (Mac/iOS)', 'app_select_onexray')],
-                [Keyboard.button.callback('Hiddify (Android/iOS)', 'app_select_hiddify')],
+                [Keyboard.button.callback('v2ray', 'app_select_v2ray')],
+                [Keyboard.button.callback('oneXray', 'app_select_onexray')],
+                [Keyboard.button.callback('Hiddify', 'app_select_hiddify')],
               ])
             ]
           }

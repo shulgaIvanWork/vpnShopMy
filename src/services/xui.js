@@ -52,8 +52,11 @@ class XuiService {
     try {
       await this.loginToServer(serverUrl, serverIndex);
       
+      const inboundIdToUse = this.servers[serverIndex].inboundId || this.inboundId;
+      console.log(`[XuiService] Getting client count for server ${serverIndex}, inbound ID: ${inboundIdToUse}`);
+      
       const response = await axios.get(
-        `${serverUrl}/panel/api/inbounds/get/${this.inboundId}`,
+        `${serverUrl}/panel/api/inbounds/get/${inboundIdToUse}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -62,15 +65,28 @@ class XuiService {
         }
       );
 
+      console.log(`[XuiService] Get inbound response status:`, response.data.success);
+      
       if (!response.data.success) {
+        console.error(`[XuiService] Get inbound failed:`, response.data);
         return 0;
       }
 
       const inbound = response.data.obj;
-      const clients = JSON.parse(inbound.settings || '{}').clients || [];
+      const settings = JSON.parse(inbound.settings || '{}');
+      const clients = settings.clients || [];
+      
+      console.log(`[XuiService] Inbound ID ${inboundIdToUse}: ${clients.length} clients found`);
+      if (clients.length > 0) {
+        console.log(`[XuiService] First client email:`, clients[0].email);
+      }
+      
       return clients.length;
     } catch (error) {
       console.error(`[XuiService] Failed to get client count:`, error.message);
+      if (error.response) {
+        console.error(`[XuiService] Response data:`, error.response.data);
+      }
       return 0;
     }
   }
@@ -420,39 +436,62 @@ class XuiService {
     }
   }
 
-  // Получение трафика клиента
+  // Получение трафика клиента (по email)
   async getClientTraffic(email) {
     try {
-      const cookie = await this.login();
-      
-      const response = await axios.get(
-        `${this.baseUrl}/panel/api/inbounds/list`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Cookie': cookie,
-          },
-        }
-      );
-
-      const inbounds = response.data.obj || [];
-      for (const inbound of inbounds) {
-        const clients = JSON.parse(inbound.settings || '{}').clients || [];
-        const client = clients.find(c => c.email === email);
+      // Ищем клиента на всех серверах
+      for (let i = 0; i < this.servers.length; i++) {
+        const server = this.servers[i];
+        const serverUrl = server.url.replace(/\/$/, '');
+        const inboundIdToUse = server.inboundId || this.inboundId;
         
-        if (client) {
-          return {
-            email: client.email,
-            up: client.up || 0,
-            down: client.down || 0,
-            total: (client.up || 0) + (client.down || 0),
-          };
+        try {
+          await this.loginToServer(serverUrl, i);
+          
+          console.log(`[XuiService] Searching for client '${email}' on server ${i} (${server.name}), inbound ${inboundIdToUse}`);
+          
+          const response = await axios.get(
+            `${serverUrl}/panel/api/inbounds/get/${inboundIdToUse}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Cookie': this.serverCookies[i],
+              },
+            }
+          );
+
+          if (!response.data.success || !response.data.obj) {
+            console.log(`[XuiService] Server ${i} response not successful or empty`);
+            continue;
+          }
+          
+          const inbound = response.data.obj;
+          const settings = JSON.parse(inbound.settings || '{}');
+          const clients = settings.clients || [];
+          
+          console.log(`[XuiService] Server ${i}: ${clients.length} total clients`);
+          
+          const client = clients.find(c => c.email === email);
+          
+          if (client) {
+            console.log(`[XuiService] Client found on server ${i}!`);
+            return {
+              email: client.email,
+              up: client.up || 0,
+              down: client.down || 0,
+              total: (client.up || 0) + (client.down || 0),
+              server: server.name,
+            };
+          }
+        } catch (error) {
+          console.error(`[XuiService] Failed to get traffic from server ${i}:`, error.message);
         }
       }
 
+      console.log(`[XuiService] Client '${email}' not found on any server`);
       return null;
     } catch (error) {
-      console.error('X-UI Get Traffic Error:', error.message);
+      console.error('[XuiService] Get Traffic Error:', error.message);
       throw error;
     }
   }

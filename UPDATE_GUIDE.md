@@ -1,7 +1,5 @@
 # 📖 Инструкция по обновлению MAX VPN Bot
 
-## ❓ Почему не нужно每次都 билдить?
-
 ### docker-compose build vs docker-compose up
 
 **`docker-compose build`** - собирает новый Docker образ из Dockerfile
