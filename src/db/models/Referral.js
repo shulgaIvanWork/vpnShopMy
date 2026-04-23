@@ -38,22 +38,11 @@ class ReferralModel {
     const result = await pool.query(
       `SELECT 
         COUNT(*) as total_invited,
-        COUNT(CASE WHEN r.reward_issued = TRUE THEN 1 END) as paid_count
+        COUNT(DISTINCT c.seq) as paid_count
        FROM referrals r
+       LEFT JOIN coupons c ON c.user_id = r.referrer_id AND c.code LIKE 'SALE-%'
        WHERE r.referrer_id = $1`,
       [referrerId]
-    );
-    return result.rows[0];
-  }
-
-  // Отметить выдачу награды
-  static async markRewardIssued(referralId) {
-    const result = await pool.query(
-      `UPDATE referrals 
-       SET reward_issued = TRUE
-       WHERE id = $1 
-       RETURNING *`,
-      [referralId]
     );
     return result.rows[0];
   }
@@ -64,7 +53,14 @@ class ReferralModel {
       `SELECT r.*, u.max_user_id 
        FROM referrals r
        JOIN users u ON r.referred_id = u.id
-       WHERE r.referrer_id = $1 AND r.reward_issued = FALSE`,
+       LEFT JOIN coupons c ON c.user_id = r.referrer_id 
+         AND c.code LIKE 'SALE-%'
+         AND EXISTS (
+           SELECT 1 FROM referrals r2 
+           WHERE r2.referred_id = u.id 
+           AND r2.referrer_id = r.referrer_id
+         )
+       WHERE r.referrer_id = $1 AND c.seq IS NULL`,
       [referrerId]
     );
     return result.rows;
