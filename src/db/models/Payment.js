@@ -5,9 +5,9 @@ class PaymentModel {
   static async create(userId, tariffDays, originalPrice, discountPercent, finalPrice, receiptMessageId = null) {
     const result = await pool.query(
       `INSERT INTO payments (user_id, tariff_days, amount, receipt_message_id, status)
-       VALUES ($1, $2, $5, $6, 'pending')
+       VALUES ($1, $2, $3, $4, 'pending')
        RETURNING *`,
-      [userId, tariffDays, originalPrice, discountPercent, finalPrice, receiptMessageId]
+      [userId, tariffDays, finalPrice, receiptMessageId]
     );
     return result.rows[0];
   }
