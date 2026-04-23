@@ -35,7 +35,7 @@ sudo usermod -aG docker $USER
 exit  # Перелогиниваемся
 
 # 3. Загружаем проект
-git clone https://github.com/YOUR_USERNAME/max-vpn-bot.git
+git clone https://github.com/shulgaIvanWork/max-vpn-bot.git
 cd max-vpn-bot
 
 # 4. Настраиваем

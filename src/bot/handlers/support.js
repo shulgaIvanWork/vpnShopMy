@@ -7,11 +7,11 @@ async function supportHandler(bot) {
   bot.action('menu_support', async (ctx) => {
     try {
       await ctx.reply(
-        '👨‍💼 Связаться с основателем:\n\n' +
+        '24/7 работает AI ассистент, если есть вопросы сформулируйте ниже, он постарается ответить:\n\n' +
+        '👨‍💼 Если это не помогло свяжитесь с основателем:\n' +
+        'Напишите ему напрямую в личные сообщения.\n' +
         'https://max.ru/u/f9LHodD0cOIVTnPglVwxPknVtL1pMA1upbJBJrgd5ZI9GhD5PP3hkfBIjXo\n\n' +
-        'Напишите ему напрямую в личные сообщения.\n\n' +
-        'Сайт основателя: https://shulga-ivan-dm.pro \n\n'+
-        'Или вернитесь в главное меню:',
+        'Сайт основателя: https://shulga-ivan-dm.pro \n\n',
         {
           attachments: [
             Keyboard.inlineKeyboard([
