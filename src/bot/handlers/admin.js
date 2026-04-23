@@ -130,10 +130,18 @@ async function adminHandler(bot) {
         const serverHost = serverUrl.hostname;
         const serverPort = 443;
         const connectionName = serverObj.name || 'Damirov_VPN_Turkey';
+        const isHttps = serverUrl.protocol === 'https:';
+        const subdomain = serverObj.subdomain;
         
-        vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+        // Для HTTPS серверов добавляем TLS параметры безопасности
+        if (isHttps && subdomain) {
+          vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${subdomain}#${connectionName}-user_${user.id}`;
+        } else {
+          vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+        }
         
         console.log('[Admin] VPN link generated:', vpnLink);
+        console.log('[Admin] Server type:', isHttps ? 'HTTPS (TLS)' : 'HTTP (no TLS)');
       } catch (error) {
         console.error('[Admin] Failed to work with 3X-UI:', error.message);
         // Продолжаем даже если ошибка, чтобы не потерять оплату
@@ -248,10 +256,20 @@ async function adminHandler(bot) {
         const serverHost = serverUrl.hostname;
         const serverPort = 443;
         const connectionName = serverObj.name || 'Damirov_VPN_Turkey';
-        const vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+        const isHttps = serverUrl.protocol === 'https:';
+        const subdomain = serverObj.subdomain;
+        
+        // Для HTTPS серверов добавляем TLS параметры безопасности
+        let vpnLink;
+        if (isHttps && subdomain) {
+          vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&sni=${subdomain}#${connectionName}-user_${user.id}`;
+        } else {
+          vpnLink = `vless://${uuid}@${serverHost}:${serverPort}?type=ws&encryption=none&path=%2Fvpn&host=&security=none#${connectionName}-user_${user.id}`;
+        }
         
         console.log('[Admin] Connection name:', connectionName);
         console.log('[Admin] VPN link:', vpnLink);
+        console.log('[Admin] Server type:', isHttps ? 'HTTPS (TLS)' : 'HTTP (no TLS)');
         
         // Сообщение 1: Информация о продлении
         await bot.api.sendMessageToUser(user.max_user_id, 

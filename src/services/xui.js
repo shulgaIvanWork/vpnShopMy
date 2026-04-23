@@ -181,6 +181,38 @@ class XuiService {
         decryption: 'none',
       };
 
+      // Определяем тип сервера (HTTP или HTTPS)
+      const isHttps = serverUrl.startsWith('https://');
+      const subdomain = server.subdomain;
+      
+      // Для HTTPS серверов используем TLS настройки
+      let streamSettings;
+      if (isHttps && subdomain) {
+        streamSettings = JSON.stringify({
+          network: 'ws',
+          security: 'tls',
+          tlsSettings: {
+            serverName: subdomain,
+            alpn: ['h2', 'http/1.1'],
+          },
+          wsSettings: {
+            path: '/vpn',
+            headers: {}
+          }
+        });
+        console.log(`[XuiService] Using TLS settings with SNI: ${subdomain}`);
+      } else {
+        streamSettings = JSON.stringify({
+          network: 'ws',
+          security: 'none',
+          wsSettings: {
+            path: '/vpn',
+            headers: {}
+          }
+        });
+        console.log(`[XuiService] Using no security (HTTP server)`);
+      }
+
       const response = await axios.post(
         `${serverUrl}/panel/api/inbounds/addClient`,
         {
@@ -191,14 +223,7 @@ class XuiService {
             decryption: 'none',
           }),
           // ВАЖНО: streamSettings должен быть JSON СТРОКОЙ, не объектом!
-          streamSettings: JSON.stringify({
-            network: 'ws',
-            security: 'none',
-            wsSettings: {
-              path: '/vpn',
-              headers: {}
-            }
-          })
+          streamSettings: streamSettings
         },
         {
           headers: {
