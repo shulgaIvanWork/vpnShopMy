@@ -120,29 +120,50 @@ async function main() {
     }
   });
   
-  // Обработка ошибок сети
+  // Обработка ошибок сети с автоматическим рестартом бота
+  let isRestarting = false;
+  
   process.on('uncaughtException', (error) => {
-    // Сетевые ошибки - не критичны, бот продолжит работу
+    // Сетевые ошибки - перезапускаем бота
     if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || 
         error.code === 'UND_ERR_SOCKET' || error.code === 'EAI_AGAIN' ||
         (error.cause && (error.cause.code === 'ECONNRESET' || error.cause.code === 'UND_ERR_SOCKET' || error.cause.code === 'EAI_AGAIN'))) {
-      console.error('[Network] Connection error:', error.message);
-      console.error('[Network] Bot will continue, MAX API will reconnect automatically');
-      // Не выходим, бот продолжит работу
+      console.error('[Network] Critical connection error:', error.message);
+      console.error('[Network] Restarting bot to recover connection...');
+      
+      if (!isRestarting) {
+        isRestarting = true;
+        // Даем 5 секунд на стабилизацию сети и перезапускаем процесс
+        setTimeout(() => {
+          console.error('[Network] Restarting process...');
+          process.exit(1);  // Docker автоматически перезапустит контейнер
+        }, 5000);
+      }
     } else {
       console.error('[Uncaught Exception]', error);
       console.error('[Uncaught Exception] Stack:', error.stack);
+      process.exit(1);
     }
   });
   
   process.on('unhandledRejection', (reason, promise) => {
-    // Сетевые ошибки - не критичны
+    // Сетевые ошибки - перезапускаем бота
     if (reason && (reason.code === 'ECONNRESET' || reason.code === 'UND_ERR_SOCKET' || reason.code === 'EAI_AGAIN' ||
         (reason.cause && (reason.cause.code === 'ECONNRESET' || reason.cause.code === 'UND_ERR_SOCKET' || reason.cause.code === 'EAI_AGAIN')))) {
       console.error('[Network] Unhandled rejection - connection error:', reason.message);
-      console.error('[Network] Bot will continue, polling will reconnect');
+      console.error('[Network] Restarting bot to recover connection...');
+      
+      if (!isRestarting) {
+        isRestarting = true;
+        // Даем 5 секунд на стабилизацию сети и перезапускаем процесс
+        setTimeout(() => {
+          console.error('[Network] Restarting process...');
+          process.exit(1);  // Docker автоматически перезапустит контейнер
+        }, 5000);
+      }
     } else {
       console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
+      process.exit(1);
     }
   });
   
