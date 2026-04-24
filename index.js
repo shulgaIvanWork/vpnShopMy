@@ -124,8 +124,8 @@ async function main() {
   process.on('uncaughtException', (error) => {
     // Сетевые ошибки - не критичны, бот продолжит работу
     if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || 
-        error.code === 'UND_ERR_SOCKET' ||
-        (error.cause && (error.cause.code === 'ECONNRESET' || error.cause.code === 'UND_ERR_SOCKET'))) {
+        error.code === 'UND_ERR_SOCKET' || error.code === 'EAI_AGAIN' ||
+        (error.cause && (error.cause.code === 'ECONNRESET' || error.cause.code === 'UND_ERR_SOCKET' || error.cause.code === 'EAI_AGAIN'))) {
       console.error('[Network] Connection error:', error.message);
       console.error('[Network] Bot will continue, MAX API will reconnect automatically');
       // Не выходим, бот продолжит работу
@@ -137,8 +137,8 @@ async function main() {
   
   process.on('unhandledRejection', (reason, promise) => {
     // Сетевые ошибки - не критичны
-    if (reason && (reason.code === 'ECONNRESET' || reason.code === 'UND_ERR_SOCKET' ||
-        (reason.cause && (reason.cause.code === 'ECONNRESET' || reason.cause.code === 'UND_ERR_SOCKET')))) {
+    if (reason && (reason.code === 'ECONNRESET' || reason.code === 'UND_ERR_SOCKET' || reason.code === 'EAI_AGAIN' ||
+        (reason.cause && (reason.cause.code === 'ECONNRESET' || reason.cause.code === 'UND_ERR_SOCKET' || reason.cause.code === 'EAI_AGAIN')))) {
       console.error('[Network] Unhandled rejection - connection error:', reason.message);
       console.error('[Network] Bot will continue, polling will reconnect');
     } else {
